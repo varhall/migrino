@@ -135,6 +135,16 @@ class MigrationsService
         }
     }
 
+    /**
+     * Force add file to passed files without running
+     *
+     * @param $file
+     */
+    public function skip($file)
+    {
+        $this->currentStorage()->add($file);
+    }
+
     // PROTECTED & PRIVATE METHODS
 
     /**
