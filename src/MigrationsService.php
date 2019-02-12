@@ -166,12 +166,12 @@ class MigrationsService
     protected function runFile(\SplFileInfo $file)
     {
         try {
-            $this->onMigration($file, self::STATUS_RUNNING);
+            $this->onMigration($file, self::STATUS_RUNNING, NULL);
 
             $sql = file_get_contents($file->getPathname());
 
             if (empty($sql)) {
-                $this->onMigration($file, self::STATUS_COMPLETED);
+                $this->onMigration($file, self::STATUS_COMPLETED, NULL);
                 return;
             }
 
@@ -181,7 +181,7 @@ class MigrationsService
             $this->currentStorage()->add($file->getFilename());
 
             $this->database->getConnection()->commit();
-            $this->onMigration($file, self::STATUS_COMPLETED);
+            $this->onMigration($file, self::STATUS_COMPLETED, NULL);
 
         } catch (\Exception $ex) {
             $this->database->getConnection()->rollBack();
