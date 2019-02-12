@@ -15,24 +15,26 @@ trait MigrationsCliPresenter
 
     public function renderRun()
     {
-        $result = true;
-        $this->migrationsService->onMigration[] = function(\SplFileInfo $file, $action, $args) use (&$result) {
-            $result = $result || $action === MigrationsService::STATUS_FAILED;
-        };
-
         $this->migrationsService->onMigration[] = function(\SplFileInfo $file, $action, $args) {
             if ($action === MigrationsService::STATUS_RUNNING)
-                echo "Running migration {$file->getFilename()}\n";
+                echo "Running file {$file->getFilename()}\n";
 
             else if ($action === MigrationsService::STATUS_COMPLETED)
-                echo "Migration {$file->getFilename()} completed successfully\n";
+                echo "File {$file->getFilename()} completed\n";
 
             else if ($action === MigrationsService::STATUS_FAILED)
-                echo "Migration {$file->getFilename()} failed {$args->getMessage()}\n";
+                echo "File {$file->getFilename()} failed: {$args->getMessage()}\n";
         };
 
-        $this->migrationsService->run();
+        try {
+            $this->migrationsService->run();
+            echo 'Migration completed successfully';
 
-        return +!$result;   // negation converted to int
+        } catch (\Exception $ex) {
+            echo 'Migration failed';
+            exit(255);
+        }
+
+        $this->terminate();
     }
 }
