@@ -4,6 +4,7 @@ namespace Varhall\Migrino;
 
 use Nette\Database\Context;
 use Nette\InvalidStateException;
+use Nette\SmartObject;
 use Varhall\Migrino\Storages\DatabaseStorage;
 use Varhall\Migrino\Storages\FileStorage;
 use Varhall\Migrino\Storages\IStorage;
@@ -15,11 +16,20 @@ use Varhall\Migrino\Storages\IStorage;
  */
 class MigrationsService
 {
+    use SmartObject;
+
+    public $onMigration;
+
+
     const STORAGE_FILE          = 'file';
     const STORAGE_DATABASE      = 'database';
     
     const SOURCE_MIGRATIONS     = 'migrations';
     const SOURCE_SEEDS          = 'seeds';
+
+    const STATUS_RUNNING        = 'running';
+    const STATUS_COMPLETED      = 'completed';
+    const STATUS_FAILED         = 'failed';
 
     protected $database         = NULL;
 
@@ -156,10 +166,14 @@ class MigrationsService
     protected function runFile(\SplFileInfo $file)
     {
         try {
+            $this->onMigration($file, self::STATUS_RUNNING);
+
             $sql = file_get_contents($file->getPathname());
 
-            if (empty($sql))
+            if (empty($sql)) {
+                $this->onMigration($file, self::STATUS_COMPLETED);
                 return;
+            }
 
             $this->database->getConnection()->beginTransaction();
 
@@ -167,9 +181,11 @@ class MigrationsService
             $this->currentStorage()->add($file->getFilename());
 
             $this->database->getConnection()->commit();
+            $this->onMigration($file, self::STATUS_COMPLETED);
 
         } catch (\Exception $ex) {
             $this->database->getConnection()->rollBack();
+            $this->onMigration($file, self::STATUS_FAILED, $ex);
             throw $ex;
         }
     }
