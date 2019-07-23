@@ -2,6 +2,7 @@
 
 namespace Varhall\Migrino\DI;
 
+use Nette\DI\Config\Helpers;
 use Varhall\Migrino\MigrationsService;
 
 /**
