@@ -19,7 +19,7 @@ class MigrinoExtension extends \Nette\DI\CompilerExtension
     public function loadConfiguration()
     {
         $builder = $this->getContainerBuilder();
-        $config = $this->getConfig([
+        $config = Helpers::merge($this->getConfig(), [
             'storage'       => MigrationsService::STORAGE_FILE,
             'storage_name'  => 'migrations',
             'source'        => $builder->parameters['wwwDir'] . DIRECTORY_SEPARATOR . 'sql'
