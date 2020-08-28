@@ -5,6 +5,7 @@ namespace Varhall\Migrino;
 use Nette\Database\Context;
 use Nette\InvalidStateException;
 use Nette\SmartObject;
+use Varhall\Migrino\Models\Migration;
 use Varhall\Migrino\Storages\DatabaseStorage;
 use Varhall\Migrino\Storages\FileStorage;
 use Varhall\Migrino\Storages\IStorage;
@@ -23,7 +24,7 @@ class MigrationsService
 
     const STORAGE_FILE          = 'file';
     const STORAGE_DATABASE      = 'database';
-    
+
     const SOURCE_MIGRATIONS     = 'migrations';
     const SOURCE_SEEDS          = 'seeds';
 
@@ -31,22 +32,25 @@ class MigrationsService
     const STATUS_COMPLETED      = 'completed';
     const STATUS_FAILED         = 'failed';
 
-    protected $database         = NULL;
+    protected $container        = null;
+    
+    protected $database         = null;
 
-    protected $configuration    = NULL;
+    protected $configuration    = null;
 
     protected $storages         = [];
 
-    public function __construct(Context $database)
+    public function __construct(Context $database, Container $container)
     {
         $this->database = $database;
+        $this->container = $container;
 
         $this->storages = [
             self::STORAGE_FILE      => new FileStorage(),
             self::STORAGE_DATABASE  => new DatabaseStorage()
         ];
     }
-    
+
     ////// PUBLIC METHODS
 
     // CONFIG
@@ -100,24 +104,24 @@ class MigrationsService
     public function findNew()
     {
         $result = [];
-        
+
         $passed = $this->findPassed();
         foreach (\Nette\Utils\Finder::findFiles('*.sql')->from($this->sourceDir(self::SOURCE_MIGRATIONS)) as $file) {
             $found = FALSE;
-            
+
             foreach ($passed as $item) {
                 if ($item->name === $file->getFilename()) {
-                    $found = TRUE;
+                    $found = true;
                     break;
                 }
             }
-            
+
             if (!$found)
                 $result[] = $file;
         }
-        
+
         usort($result, function($a, $b) { return $a->getFileName() > $b->getFileName(); });
-        
+
         return $result;
     }
 
@@ -157,21 +161,30 @@ class MigrationsService
 
     // PROTECTED & PRIVATE METHODS
 
+    protected function runFile(\SplFileInfo $file)
+    {
+        if (preg_match('/\.sql$/i', $file->getFilename()))
+            $this->runSQL($file);
+
+        else if (preg_match('/\.php$/i', $file->getFilename()))
+            $this->runPHP($file);
+    }
+
     /**
      * Runs a SQL file in transaction. If SQL command fails, transaction is rolled back.
      *
      * @param \SplFileInfo $file
      * @throws \Exception
      */
-    protected function runFile(\SplFileInfo $file)
+    protected function runSQL(\SplFileInfo $file)
     {
         try {
-            $this->onMigration($file, self::STATUS_RUNNING, NULL);
+            $this->onMigration($file, self::STATUS_RUNNING, null);
 
             $sql = file_get_contents($file->getPathname());
 
             if (empty($sql)) {
-                $this->onMigration($file, self::STATUS_COMPLETED, NULL);
+                $this->onMigration($file, self::STATUS_COMPLETED, null);
                 return;
             }
 
@@ -181,13 +194,29 @@ class MigrationsService
             $this->currentStorage()->add($file->getFilename());
 
             $this->database->getConnection()->commit();
-            $this->onMigration($file, self::STATUS_COMPLETED, NULL);
+            $this->onMigration($file, self::STATUS_COMPLETED, null);
 
         } catch (\Exception $ex) {
             $this->database->getConnection()->rollBack();
             $this->onMigration($file, self::STATUS_FAILED, $ex);
             throw $ex;
         }
+    }
+
+    protected function runPHP(\SplFileInfo $file)
+    {
+        include $file->getRealPath();
+
+        $classname = preg_replace('/\.php$/i', '', $file->getFilename());
+        $migration = new $classname();
+
+        if (!($migration instanceof Migration))
+            throw new \Nette\InvalidStateException("Class {$classname} is not instance of " . Migration::class);
+
+        $migration->container = $this->container;
+        $migration->context = $this->database;
+
+        $migration->up();
     }
 
     /**

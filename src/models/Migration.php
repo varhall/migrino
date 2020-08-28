@@ -2,26 +2,27 @@
 
 namespace Varhall\Migrino\Models;
 
-/**
- * Database migrations model class
- *
- * @author Ondrej Sibrava <sibrava@varhall.cz>
- */
-class Migration extends \Varhall\Dbino\Model
+
+abstract class Migration
 {
+    /**
+     * @var \Nette\DI\Container
+     */
+    public $container = null;
 
-    protected function plugins()
+    /**
+     * @var \Nette\Database\Context
+     */
+    public $context = null;
+
+
+    public function up()
     {
-        return [];
+
     }
 
-    protected function softDeletes()
+    public function down()
     {
-        return FALSE;
-    }
 
-    protected function table()
-    {
-        return 'migrations';
     }
 }

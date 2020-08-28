@@ -2,7 +2,7 @@
 
 namespace Varhall\Migrino\Storages;
 
-use Varhall\Migrino\Models\Migration;
+use Varhall\Migrino\Models\DatabaseMigration;
 
 /**
  * Database migrations log storage
@@ -39,7 +39,7 @@ class DatabaseStorage implements IStorage
      */
     public function passed()
     {
-        return Migration::all();
+        return DatabaseMigration::all();
     }
 
     /**
@@ -50,7 +50,7 @@ class DatabaseStorage implements IStorage
      */
     public function add($file)
     {
-        Migration::create([
+        DatabaseMigration::create([
             'name'  => $file
         ]);
     }
