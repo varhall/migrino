@@ -107,7 +107,7 @@ class MigrationsService
         $result = [];
 
         $passed = $this->findPassed();
-        foreach (\Nette\Utils\Finder::findFiles('*.sql')->from($this->sourceDir(self::SOURCE_MIGRATIONS)) as $file) {
+        foreach (\Nette\Utils\Finder::findFiles('*.sql', '*.php')->from($this->sourceDir(self::SOURCE_MIGRATIONS)) as $file) {
             $found = FALSE;
 
             foreach ($passed as $item) {
