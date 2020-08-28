@@ -3,6 +3,7 @@
 namespace Varhall\Migrino;
 
 use Nette\Database\Context;
+use Nette\DI\Container;
 use Nette\InvalidStateException;
 use Nette\SmartObject;
 use Varhall\Migrino\Models\Migration;
