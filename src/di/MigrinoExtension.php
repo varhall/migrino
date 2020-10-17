@@ -31,6 +31,7 @@ class MigrinoExtension extends \Nette\DI\CompilerExtension
             ->setFactory('Varhall\Migrino\MigrationsService')
             ->addSetup('setStorageType', [ $config['storage_type'] ])
             ->addSetup('setStorageFilename', [ $config['storage_filename'] ])
-            ->addSetup('setSourcedir', [ $config['sourcedir'] ]);
+            ->addSetup('setSourcedir', [ $config['sourcedir'] ])
+            ->addSetup('setNamespace', [ $config['namespace'] ]);
     }
 }
