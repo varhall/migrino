@@ -21,9 +21,10 @@ class MigrinoExtension extends \Nette\DI\CompilerExtension
     {
         $builder = $this->getContainerBuilder();
         $config = Helpers::merge($this->getConfig(), [
-            'storage'       => MigrationsService::STORAGE_FILE,
-            'storage_name'  => 'migrations',
-            'source'        => $builder->parameters['wwwDir'] . DIRECTORY_SEPARATOR . 'sql'
+            'storage_type'      => MigrationsService::STORAGE_FILE,
+            'storage_filename'  => 'migrations',
+            'sourcedir'         => $builder->parameters['wwwDir'] . DIRECTORY_SEPARATOR . 'sql',
+            'namespace'         => '\\Varhall\\Migrino\\Migrations'
         ]);
 
         $builder->addDefinition($this->prefix('migrino'))

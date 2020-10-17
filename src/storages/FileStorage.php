@@ -80,7 +80,7 @@ class FileStorage implements IStorage
      */
     protected function storageFileName()
     {
-        return $this->configuration['source'] . DIRECTORY_SEPARATOR . $this->configuration['storage_name'] . '.json';
+        return $this->configuration['sourcedir'] . DIRECTORY_SEPARATOR . $this->configuration['storage_filename'] . '.json';
     }
 
     /**

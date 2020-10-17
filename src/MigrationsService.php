@@ -56,34 +56,44 @@ class MigrationsService
 
     // CONFIG
 
-    public function getStorage()
+    public function getStorageType()
     {
-        return isset($this->configuration['storage']) ? $this->configuration['storage'] : self::STORAGE_FILE;
+        return isset($this->configuration['storage_type']) ? $this->configuration['storage_type'] : self::STORAGE_FILE;
     }
 
-    public function setStorage($storage)
+    public function setStorageType($type)
     {
-        $this->configuration['storage'] = $storage;
+        $this->configuration['storage_type'] = $type;
     }
 
-    public function getSource()
+    public function getSourcedir()
     {
-        return $this->configuration['source'];
+        return $this->configuration['sourcedir'];
     }
 
-    public function setSource($source)
+    public function setSourcedir($source)
     {
-        $this->configuration['source'] = $source;
+        $this->configuration['sourcedir'] = $source;
     }
 
-    public function getStorageName()
+    public function getStorageFilename()
     {
-        return $this->configuration['storage_name'];
+        return $this->configuration['storage_filename'];
     }
 
-    public function setStorageName($storageName)
+    public function setStorageFilename($file)
     {
-        $this->configuration['storage_name'] = $storageName;
+        $this->configuration['storage_filename'] = $file;
+    }
+
+    public function getNamespace()
+    {
+        return $this->configuration['namespace'];
+    }
+
+    public function setNamespace($namespace)
+    {
+        $this->configuration['namespace'] = $namespace;
     }
 
 
@@ -206,18 +216,32 @@ class MigrationsService
 
     protected function runPHP(\SplFileInfo $file)
     {
-        include $file->getRealPath();
+        try {
+            $this->onMigration($file, self::STATUS_RUNNING, null);
 
-        $classname = preg_replace('/\.php$/i', '', $file->getFilename());
-        $migration = new $classname();
+            include $file->getRealPath();
 
-        if (!($migration instanceof Migration))
-            throw new \Nette\InvalidStateException("Class {$classname} is not instance of " . Migration::class);
+            $namespace = trim($this->getNamespace(), '\\');
+            $classname = preg_replace('/\.php$/i', '', $file->getFilename());
+            $classname = "\\{$namespace}\\{$classname}";
 
-        $migration->container = $this->container;
-        $migration->context = $this->database;
+            $migration = new $classname();
 
-        $migration->up();
+            if (!($migration instanceof Migration))
+                throw new \Nette\InvalidStateException("Class {$classname} is not instance of " . Migration::class);
+
+            $migration->container = $this->container;
+            $migration->context = $this->database;
+
+            $migration->up();
+
+            $this->currentStorage()->add($file->getFilename());
+            $this->onMigration($file, self::STATUS_COMPLETED, null);
+
+        } catch (\Exception $ex) {
+            $this->onMigration($file, self::STATUS_FAILED, $ex);
+            throw $ex;
+        }
     }
 
     /**
@@ -228,7 +252,7 @@ class MigrationsService
      */
     protected function sourceDir($type)
     {
-        return $this->getSource() . DIRECTORY_SEPARATOR . $type;
+        return $this->getSourcedir() . DIRECTORY_SEPARATOR . $type;
     }
 
     /**
@@ -238,7 +262,7 @@ class MigrationsService
      */
     protected function currentStorage()
     {
-        $name = $this->getStorage();
+        $name = $this->getStorageType();
 
         if (!isset($this->storages[$name]))
             throw new \Nette\InvalidStateException("Storage '{$name}' does not exist");
