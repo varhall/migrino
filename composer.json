@@ -1,33 +1,33 @@
 {
 	"name": "varhall/migrino",
 	"type": "library",
-	"description": "Varhall database migrations",
+	"description": "Nette Database Migrations Library",
 	"keywords": ["nette", "database", "migrations"],
-	"homepage": "https://gitlab.com/varhallpub/migrino",
+	"homepage": "https://github.com/varhall/migrino",
 	"license": "MIT",
         "authors": [
 		{
 			"name": "Ondrej Sibrava",
-			"homepage": "http://www.varhall.cz"
+			"homepage": "https://www.varhall.cz"
 		}
 	],
 	"support": {
-		"issues": "https://gitlab.com/varhallpub/migrino"
+		"issues": "https://github.com/varhall/migrino"
 	},
 
 	"require": {
-		"php": ">=7.2.0",
-		"nette/utils": ">=2.4",
-		"nette/database": ">=2.4",
-		"nette/reflection": ">=2.3",
-		"nette/di": ">=2.4"
+		"php": ">=7.4.0",
+		"nette/utils": ">=v3.2.5",
+		"nette/database": ">=v3.1.3",
+		"nette/reflection": ">=v2.4.2",
+		"nette/di": ">=v3.0.11"
 	},
 
 	"require-dev": {
-		"tracy/tracy": ">=2.4",
-		"nette/tester": ">=1.7",
-		"nette/caching": ">=2.5",
-		"nette/robot-loader": ">=2.4"
+		"tracy/tracy": ">=v2.8.7",
+		"nette/tester": ">=v2.4.1",
+		"nette/caching": ">=v3.1.1",
+		"nette/robot-loader": ">=v3.2.5"
 	},
 
 	"autoload": {
