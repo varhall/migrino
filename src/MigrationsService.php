@@ -131,7 +131,7 @@ class MigrationsService
                 $result[] = $file;
         }
 
-        usort($result, function($a, $b) { return $a->getFileName() > $b->getFileName(); });
+        usort($result, function($a, $b) { return -1 * ($a->getFileName() <=> $b->getFileName()); });
 
         return $result;
     }
