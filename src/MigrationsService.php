@@ -20,7 +20,7 @@ class MigrationsService
 {
     use SmartObject;
 
-    public $onMigration;
+    public $onMigration         = [];
 
 
     const STORAGE_FILE          = 'file';
